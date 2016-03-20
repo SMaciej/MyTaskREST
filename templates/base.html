@@ -1,0 +1,182 @@
+{% extends "index.html" %}
+{% load staticfiles %}
+
+{% block tasks %}
+
+<div class="jumbotron">
+    <h1>Twoja lista zadań</h1>
+    <br><br>
+    <table class="table table-hover">
+        <tbody>
+
+            <!-- Wyświetla poszczególne zadania. -->
+            {% for task in user_tasks.results %}
+
+                <!-- Dopasowuje kolor zadania do poziomu ich ważności. -->
+                {% if task.priority = 3 %}
+                    <tr class="danger">
+                {% elif task.priority = 2 %}
+                    <tr class="warning">
+                {% elif task.priority = 1 %}
+                    <tr class="info">
+                {% endif %}
+                {% if task.status = True %}
+                    <tr class="success">
+                {% endif %}
+
+                <td><p>{{ task.name }}</p></td>
+
+                <!-- Sprawdza, czy zadanie jest wykonane i przyjmuje odpowiednią formę graficzną -->
+                <td><p>
+                    {% if task.status = True %}
+                        <form action="{% url 'uncheck' task.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit"><img src="{% static 'images/success.png' %}" height="30" width="30"></button>
+                        </form>
+                    {% elif task.status = False %}
+                        <form action="{% url 'check' task.id %}" method="post">
+                            {% csrf_token %}
+                            <button type="submit"><img src="{% static 'images/blank.png' %}" height="30" width="30"></button>
+                        </form>
+                    {% endif %}
+                </p></td>
+                </tr>
+
+            {% endfor %}
+
+        </tbody>
+    </table>
+
+
+    <div class="row">
+
+        <!-- Przycisk usuwający zakończone zadania -->
+        <div class="col-md-4">
+            <form action="{% url 'clear' %}" method="get">
+                <button type="submit" class="btn btn-default">Wyczyść</button> 
+            </form>
+        </div>
+
+        <div class="col-md-8">
+
+                <dl id="menu0">
+
+                    <dt><button type="submit" class="btn btn-success">Nowe zadanie</button></dt>
+
+                        <dd>
+
+                            <br>
+                            <form class="form-horizontal" method="post" action="">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="name">Nazwa</label>
+                                    <input type="text" class="form-control" name="name" id="name" size="1"/>
+                                </div>
+                                <div class="form-group">
+                                    <label for="priority">Priorytet</label>
+                                    <select class="form-control" name="priority">
+                                        <option>Niski</option>
+                                        <option>Sredni</option>
+                                        <option>Wysoki</option>
+                                    </select>
+                                </div>
+                                <input type="submit" class="btn btn-primary" value="Dodaj" name="add">
+                            </form>
+
+                        </dd>
+                </dl>
+
+                <script type="text/javascript">
+                    // <![CDATA[
+                    new Menu('menu0');
+                    // ]]>
+                </script>
+
+            </form>
+
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+{% block login %}
+
+<div class="jumbotron">
+
+    <h1>Twoja lista zadań</h1>
+    <br>
+    <p>Zaloguj się aby zacząć korzystać z serwisu! Jeśli nie masz jeszcze konta, możesz je założyć <a href="/register/">tutaj</a>.</p>
+    <br>
+
+    <form class="form-horizontal" method="post" action="/">
+
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="user">Użytkownik:</label>
+            <input type="text" class="form-control" name="user" id="user" size="1"/>
+        </div>
+        <div class="form-group">
+            <label for="password">Hasło:</label>
+            <input type="password" class="form-control" name="password" id="password" size="1"/>
+        </div>
+        <br>
+        <input type="submit" class="btn btn-primary" value="Zaloguj się" name="login">
+
+        {% if form.errors %}
+            <p class="bg-danger">Wystąpił błąd w formularzu. Spróbuj ponownie.</p>
+        {% endif %}
+
+    </form>
+
+</div>
+
+{% endblock %}
+
+
+{% block register %}
+
+<div class="jumbotron">
+    <h1>Rejestracja</h1>
+    <p>Zarejestruj się aby móc zacząć korzystać z serwisu!</p>
+
+    <form class="form-horizontal" method="post" action="/">
+
+        {% csrf_token %}
+
+        <div class="form-group">
+            <label for="username">Użytkownik:</label>
+            <input type="text" class="form-control" name="username" id="username" size="1"/>
+        </div>
+        <div class="form-group">
+            <label for="exampleInputEmail1">Email:</label>
+            <input type="email" class="form-control" name="email" size="1"/>
+        </div>
+        <div class="form-group">
+            <label for="pass">Hasło:</label>
+            <input type="password" class="form-control" name="pass" id="pass" size="1"/>
+        </div>
+        <input type="submit" class="btn btn-primary" value="Zarejestruj się" name="reg">
+
+        {% if form.errors %}
+            <p class="bg-danger">Wystąpił błąd w formularzu. Spróbuj ponownie.</p>
+        {% endif %}
+
+    </form>
+
+</div>
+
+{% endblock %}
+
+
+{% block footer %}
+<div class="jumbotron">
+    <h4>MyTask - aplikacja do zarządzania listą zadań stworzona jako projekt na zajęcia Projektowanie internetowych systemów informacyjnych. Wydział Matematyki i Informatyki Uniwersytetu im. Adama Mickiewicza w Poznaniu.</h4>
+    <h4>Maciej Sobolewski</h4>
+</div>
+{% endblock %}
+
