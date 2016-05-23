@@ -1,4 +1,4 @@
 # MyTaskREST
-Simple school project for PiS classes.
+Simple school project.
 
-You have to run REST API server included in "WebAPI" catalog first.
+You have to run REST API server included in "Server" catalog first.

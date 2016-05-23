@@ -24,7 +24,7 @@
                     <tr class="success">
                 {% endif %}
 
-                <td><p>{{ task.name }}</p></td>
+                <td><h3>{{ task.name }}</h3></td>
 
                 <!-- Sprawdza, czy zadanie jest wykonane i przyjmuje odpowiednią formę graficzną -->
                 <td><p>
@@ -66,7 +66,7 @@
                         <dd>
 
                             <br>
-                            <form class="form-horizontal" method="post" action="">
+                            <form class="form-horizontal" method="post" action="{% url 'add_task' %}">
                                 {% csrf_token %}
                                 <div class="form-group">
                                     <label for="name">Nazwa</label>
@@ -112,7 +112,7 @@
     <p>Zaloguj się aby zacząć korzystać z serwisu! Jeśli nie masz jeszcze konta, możesz je założyć <a href="/register/">tutaj</a>.</p>
     <br>
 
-    <form class="form-horizontal" method="post" action="/">
+    <form class="form-horizontal" method="post" action="{% url 'login' %}">
 
         {% csrf_token %}
 
@@ -144,7 +144,7 @@
     <h1>Rejestracja</h1>
     <p>Zarejestruj się aby móc zacząć korzystać z serwisu!</p>
 
-    <form class="form-horizontal" method="post" action="/">
+    <form class="form-horizontal" method="post" action="{% url 'reg' %}">
 
         {% csrf_token %}
 
@@ -175,7 +175,7 @@
 
 {% block footer %}
 <div class="jumbotron">
-    <h4>MyTask - aplikacja do zarządzania listą zadań stworzona jako projekt na zajęcia Projektowanie internetowych systemów informacyjnych. Wydział Matematyki i Informatyki Uniwersytetu im. Adama Mickiewicza w Poznaniu.</h4>
+    <h4>MyTask - aplikacja do zarządzania listą zadań stworzona jako projekt na zajęcia na Wydziale Matematyki i Informatyki Uniwersytetu im. Adama Mickiewicza w Poznaniu.</h4>
     <h4>Maciej Sobolewski</h4>
 </div>
 {% endblock %}

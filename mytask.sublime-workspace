@@ -4,16 +4,16 @@
 		"selected_items":
 		[
 			[
+				"user",
+				"username"
+			],
+			[
 				"lo",
 				"logged_in"
 			],
 			[
 				"for",
 				"forms	module"
-			],
-			[
-				"user",
-				"user_tasks"
 			],
 			[
 				"x",
@@ -52,54 +52,34 @@
 	"buffers":
 	[
 		{
-			"contents": "from django.shortcuts import render_to_response, redirect\nfrom django.template import RequestContext\nimport slumber\n\ndef home(request, register=False):\n\n    try:\n        user_tasks = api.tasks.get()\n        logged_in = True\n    except:\n        logged_in = False\n        user_tasks = {}\n\n    if request.POST.get('add'):\n        add_task(request.POST.get('name'), request.POST.get('priority'))\n        return redirect('/')\n\n    elif request.POST.get('reg'):\n        reg(request.POST.get('username'), request.POST.get('pass'), request.POST.get('email'))\n        return redirect('/')\n\n    elif request.POST.get('login'):\n        login(request.POST.get('user'), request.POST.get('password'))\n        return redirect('/')\n\n    template = 'base.html'\n    context = {'user_tasks':user_tasks, 'logged_in':logged_in, 'register':register}\n    \n    return render_to_response(template, context, context_instance=RequestContext(request))\n\ndef clear(request):\n    \"\"\" Usuwa z bazy danych wykonane zadania. \"\"\"\n\n    for task in api.tasks.get()['results']:\n        if task['status'] == True:\n            api.tasks(task['id']).delete()\n\n    return redirect('/')\n\ndef check(request, task_id):\n    \"\"\" Zaznacza zadanie. \"\"\"\n\n    api.tasks(task_id).patch({\"status\": True})\n\n    return redirect('/')\n\ndef uncheck(request, task_id):\n    \"\"\" Odznacza zadanie. \"\"\"\n\n    api.tasks(task_id).patch({\"status\": False})\n\n    return redirect('/')\n\ndef add_task(name, priority):\n    \"\"\" Dodaje nowe zadanie. \"\"\"\n\n    if priority == \"Niski\":\n        priority = 1\n    elif priority == \"Sredni\":\n        priority = 2\n    elif priority == \"Wysoki\":\n        priority = 3\n\n    api.tasks.post({\"name\": name, \"priority\": priority})\n\ndef login(user, password):\n    \"\"\" Loguje uzytkownika. \"\"\"\n\n    global api\n\n    api = slumber.API(\"http://127.0.0.1:8000/\", auth=(user, password))\n\ndef logout(request):\n    \"\"\" Wylogowuje uzytkownika. \"\"\"\n\n    global api\n\n    api = {}\n    return redirect('/')\n\ndef reg(user, password, email):\n    \"\"\" Rejestruje uzytkownika. \"\"\"\n\n    global api\n\n    api = slumber.API(\"http://127.0.0.1:8000/\", auth=(\"admin\", \"admin\"))\n    try:\n        api.users.post({\"username\":user, \"password\":password, \"email\":email})\n    except:\n        pass\n    del api\n    return redirect('/')",
-			"file": "tasks/views.py",
-			"file_size": 2259,
-			"file_write_time": 130970212387975162,
-			"settings":
-			{
-				"buffer_size": 2259,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"file": "/home/maciej/Copy Decrypted/Documents/Informatyka Studia/Semestr V/Automaty i języki formalne/LABS/daut-2015-s384780/TaskX08/sample.hs",
-			"settings":
-			{
-				"buffer_size": 1323,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "{% load staticfiles %}\n\n\n<!DOCTYPE html>\n<html lang=\"pl\">\n\n    <head>\n\n        <meta charset=\"utf-8\">\n        <meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">\n        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n        <!-- Powyższe trzy trzymaj zawsze na początku heada. -->\n\n        <meta name=\"description\" content=\"MyTask to aplikacja do zarządzania listą zadań stworzona jako projekt na zajęcia Projektowanie internetowych systemów informacyjnych.\">\n        <meta name=\"author\" content=\"Maciej Sobolewski\">\n\n        <title>MyTask</title>\n\n        <!-- Bootstrap CSS. -->\n        <link href=\"{% static 'css/bootstrap.min.css' %}\" rel=\"stylesheet\">\n        <link href=\"{% static 'css/ie10-viewport-bug-workaround.css' %}\" rel=\"stylesheet\">\n        <link href=\"{% static 'css/jumbotron-narrow.css' %}\" rel=\"stylesheet\">\n\n        <script type=\"text/javascript\" src=\"{% static 'js/menu.js' %}\"></script>\n\n    </head>\n\n    <body>\n\n        <div class=\"container\">\n            <div class=\"header clearfix\">\n\n                <nav>\n                    <ul class=\"nav nav-pills pull-right\">\n                        {% if logged_in == True %}\n                            <li role=\"presentation\"><a href=\"{% url 'logout' %}\">Wyloguj</a></li>\n                        {% else %}\n                            <li role=\"presentation\"><a href=\"/\">Zaloguj</a></li>\n                        {% endif %}\n                    </ul>\n                </nav>\n\n                <h3 class=\"text-muted\">MyTask</h3>\n\n            </div>\n\n            {% if logged_in == True %}\n                {% block tasks %}\n                {% endblock %}\n            {% elif register %}\n                {% block register %}\n                {% endblock %}\n            {% else %}\n                {% block login %}\n                {% endblock %}\n            {% endif %}\n\n            {% block footer %}\n            {% endblock %}\n\n        </div> \n\n    </body>\n\n</html>\n",
-			"file": "templates/index.html",
-			"file_size": 1959,
-			"file_write_time": 130962469286502957,
-			"settings":
-			{
-				"buffer_size": 1952,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "{% extends \"index.html\" %}\n{% load staticfiles %}\n\n{% block tasks %}\n\n<div class=\"jumbotron\">\n    <h1>Twoja lista zadań</h1>\n    <br><br>\n    <table class=\"table table-hover\">\n        <tbody>\n\n            <!-- Wyświetla poszczególne zadania. -->\n            {% for task in user_tasks.results %}\n\n                <!-- Dopasowuje kolor zadania do poziomu ich ważności. -->\n                {% if task.priority = 3 %}\n                    <tr class=\"danger\">\n                {% elif task.priority = 2 %}\n                    <tr class=\"warning\">\n                {% elif task.priority = 1 %}\n                    <tr class=\"info\">\n                {% endif %}\n                {% if task.status = True %}\n                    <tr class=\"success\">\n                {% endif %}\n\n                <td><p>{{ task.name }}</p></td>\n\n                <!-- Sprawdza, czy zadanie jest wykonane i przyjmuje odpowiednią formę graficzną -->\n                <td><p>\n                    {% if task.status = True %}\n                        <form action=\"{% url 'uncheck' task.id %}\" method=\"post\">\n                            {% csrf_token %}\n                            <button type=\"submit\"><img src=\"{% static 'images/success.png' %}\" height=\"30\" width=\"30\"></button>\n                        </form>\n                    {% elif task.status = False %}\n                        <form action=\"{% url 'check' task.id %}\" method=\"post\">\n                            {% csrf_token %}\n                            <button type=\"submit\"><img src=\"{% static 'images/blank.png' %}\" height=\"30\" width=\"30\"></button>\n                        </form>\n                    {% endif %}\n                </p></td>\n                </tr>\n\n            {% endfor %}\n\n        </tbody>\n    </table>\n\n\n    <div class=\"row\">\n\n        <!-- Przycisk usuwający zakończone zadania -->\n        <div class=\"col-md-4\">\n            <form action=\"{% url 'clear' %}\" method=\"get\">\n                <button type=\"submit\" class=\"btn btn-default\">Wyczyść</button> \n            </form>\n        </div>\n\n        <div class=\"col-md-8\">\n\n                <dl id=\"menu0\">\n\n                    <dt><button type=\"submit\" class=\"btn btn-success\">Nowe zadanie</button></dt>\n\n                        <dd>\n\n                            <br>\n                            <form class=\"form-horizontal\" method=\"post\" action=\"\">\n                                {% csrf_token %}\n                                <div class=\"form-group\">\n                                    <label for=\"name\">Nazwa</label>\n                                    <input type=\"text\" class=\"form-control\" name=\"name\" id=\"name\" size=\"1\"/>\n                                </div>\n                                <div class=\"form-group\">\n                                    <label for=\"priority\">Priorytet</label>\n                                    <select class=\"form-control\" name=\"priority\">\n                                        <option>Niski</option>\n                                        <option>Sredni</option>\n                                        <option>Wysoki</option>\n                                    </select>\n                                </div>\n                                <input type=\"submit\" class=\"btn btn-primary\" value=\"Dodaj\" name=\"add\">\n                            </form>\n\n                        </dd>\n                </dl>\n\n                <script type=\"text/javascript\">\n                    // <![CDATA[\n                    new Menu('menu0');\n                    // ]]>\n                </script>\n\n            </form>\n\n        </div>\n\n    </div>\n\n</div>\n\n{% endblock %}\n\n\n{% block login %}\n\n<div class=\"jumbotron\">\n\n    <h1>Twoja lista zadań</h1>\n    <br>\n    <p>Zaloguj się aby zacząć korzystać z serwisu! Jeśli nie masz jeszcze konta, możesz je założyć <a href=\"/register/\">tutaj</a>.</p>\n    <br>\n\n    <form class=\"form-horizontal\" method=\"post\" action=\"/\">\n\n        {% csrf_token %}\n\n        <div class=\"form-group\">\n            <label for=\"user\">Użytkownik:</label>\n            <input type=\"text\" class=\"form-control\" name=\"user\" id=\"user\" size=\"1\"/>\n        </div>\n        <div class=\"form-group\">\n            <label for=\"password\">Hasło:</label>\n            <input type=\"password\" class=\"form-control\" name=\"password\" id=\"password\" size=\"1\"/>\n        </div>\n        <br>\n        <input type=\"submit\" class=\"btn btn-primary\" value=\"Zaloguj się\" name=\"login\">\n\n        {% if form.errors %}\n            <p class=\"bg-danger\">Wystąpił błąd w formularzu. Spróbuj ponownie.</p>\n        {% endif %}\n\n    </form>\n\n</div>\n\n{% endblock %}\n\n\n{% block register %}\n\n<div class=\"jumbotron\">\n    <h1>Rejestracja</h1>\n    <p>Zarejestruj się aby móc zacząć korzystać z serwisu!</p>\n\n    <form class=\"form-horizontal\" method=\"post\" action=\"/\">\n\n        {% csrf_token %}\n\n        <div class=\"form-group\">\n            <label for=\"username\">Użytkownik:</label>\n            <input type=\"text\" class=\"form-control\" name=\"username\" id=\"username\" size=\"1\"/>\n        </div>\n        <div class=\"form-group\">\n            <label for=\"exampleInputEmail1\">Email:</label>\n            <input type=\"email\" class=\"form-control\" name=\"email\" size=\"1\"/>\n        </div>\n        <div class=\"form-group\">\n            <label for=\"pass\">Hasło:</label>\n            <input type=\"password\" class=\"form-control\" name=\"pass\" id=\"pass\" size=\"1\"/>\n        </div>\n        <input type=\"submit\" class=\"btn btn-primary\" value=\"Zarejestruj się\" name=\"reg\">\n\n        {% if form.errors %}\n            <p class=\"bg-danger\">Wystąpił błąd w formularzu. Spróbuj ponownie.</p>\n        {% endif %}\n\n    </form>\n\n</div>\n\n{% endblock %}\n\n\n{% block footer %}\n<div class=\"jumbotron\">\n    <h4>MyTask - aplikacja do zarządzania listą zadań stworzona jako projekt na zajęcia Projektowanie internetowych systemów informacyjnych. Wydział Matematyki i Informatyki Uniwersytetu im. Adama Mickiewicza w Poznaniu.</h4>\n    <h4>Maciej Sobolewski</h4>\n</div>\n{% endblock %}\n\n",
-			"file": "templates/base.html",
-			"file_size": 5975,
-			"file_write_time": 130970654037424044,
-			"settings":
-			{
-				"buffer_size": 5926,
-				"line_ending": "Unix"
-			}
-		},
-		{
-			"contents": "from django.conf.urls import patterns, include, url\nfrom django.contrib import admin\n\nurlpatterns = patterns('',\n    url(r'^$', 'tasks.views.home', name='home'),\n    url(r'^logout/$', 'tasks.views.logout', name='logout'),\n    url(r'^clear/$', 'tasks.views.clear', name='clear'),\n    url(r'^check/([0-9]+)/$', 'tasks.views.check', name='check'),\n    url(r'^uncheck/([0-9]+)/$', 'tasks.views.uncheck', name='uncheck'),\n    url(r'^(.+)/$', 'tasks.views.home', name='register'),\n)\n",
 			"file": "MyTask/urls.py",
-			"file_size": 477,
-			"file_write_time": 130970210704246813,
 			"settings":
 			{
-				"buffer_size": 477,
+				"buffer_size": 766,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "tasks/views.py",
+			"settings":
+			{
+				"buffer_size": 3050,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "templates/registration/success.html",
+			"settings":
+			{
+				"buffer_size": 1315,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "templates/registration/error.html",
+			"settings":
+			{
+				"buffer_size": 1347,
 				"line_ending": "Unix"
 			}
 		}
@@ -170,13 +150,23 @@
 	},
 	"expanded_folders":
 	[
-		"/home/maciej/Copy Decrypted/Development/Projects/MyTask",
-		"/home/maciej/Copy Decrypted/Development/Projects/MyTask/MyTask",
-		"/home/maciej/Copy Decrypted/Development/Projects/MyTask/tasks",
-		"/home/maciej/Copy Decrypted/Development/Projects/MyTask/templates"
+		"/home/maciej/Copy/Development/Projects/MyTaskREST/Client",
+		"/home/maciej/Copy/Development/Projects/MyTaskREST/Client/MyTask",
+		"/home/maciej/Copy/Development/Projects/MyTaskREST/Client/tasks",
+		"/home/maciej/Copy/Development/Projects/MyTaskREST/Client/templates",
+		"/home/maciej/Copy/Development/Projects/MyTaskREST/Client/templates/registration"
 	],
 	"file_history":
 	[
+		"/home/maciej/Copy/Development/Projects/MyTaskREST/Client/templates/registration/error.html",
+		"/home/maciej/Copy/Development/Projects/MyTaskREST/Client/templates/registration/success.html",
+		"/home/maciej/Copy/Development/Projects/MyTaskREST/Client/MyTask/settings.py",
+		"/home/maciej/Copy/Development/Projects/MyTaskREST/Client/tasks/views.py",
+		"/home/maciej/Copy/Development/Projects/MyTaskREST/Client/templates/base.html",
+		"/home/maciej/Copy/Development/Projects/MyTaskREST/Client/templates/index.html",
+		"/home/maciej/Copy/Development/Projects/MyTaskREST/Client/README.md",
+		"/home/maciej/file.txt",
+		"/home/maciej/Copy Decrypted/Documents/Informatyka Studia/Semestr V/Automaty i języki formalne/LABS/daut-2015-s384780/TaskX08/sample.hs",
 		"/home/maciej/Copy Decrypted/Development/Projects/MyTask/templates/base.html",
 		"/home/maciej/Copy Decrypted/Development/Projects/MyTask/templates/registration/registration_form.html",
 		"/home/maciej/Copy Decrypted/Development/Projects/MyTask/templates/index.html",
@@ -295,16 +285,7 @@
 		"/home/maciej/Development/Django/lwc/appka/admin.py",
 		"/home/maciej/Development/Django/lwc/(unreachable)/Development/Django/lwc/appka/tests.py",
 		"/home/maciej/Development/Django/lwc/templates/css/jumbotron.css",
-		"/home/maciej/Development/Django/lwc/templates/js/ie-emulation-modes-warning.js",
-		"/home/maciej/Development/Django/lwc/templates/navbar.html",
-		"/home/maciej/.i3status.conf",
-		"/home/maciej/Development/Django/lwc/lwc/urls.py",
-		"/home/maciej/Development/Django/lwc/lwc/views.py",
-		"/home/maciej/Development/Django/lwc/lwc/settings.py",
-		"/home/maciej/Development/Django/lwc/templates/home.html",
-		"/home/maciej/.mozilla/firefox/mwad0hks.default/chrome/userContent.css",
-		"/home/maciej/Copy/Development/Python/sentdex/keys.py",
-		"/home/maciej/Copy/Development/Django/lwc/manage.py"
+		"/home/maciej/Development/Django/lwc/templates/js/ie-emulation-modes-warning.js"
 	],
 	"find":
 	{
@@ -315,6 +296,7 @@
 		"height": 93.0,
 		"where_history":
 		[
+			"/home/maciej/Copy/Development/Projects/MyTaskREST/Client",
 			"/home/maciej/Development/Django/lwc/appka"
 		]
 	},
@@ -323,6 +305,9 @@
 		"case_sensitive": false,
 		"find_history":
 		[
+			"zaloguj",
+			"success",
+			"PIS",
 			"add",
 			"chack",
 			"logout",
@@ -403,142 +388,24 @@
 	"groups":
 	[
 		{
-			"selected": 0,
+			"selected": 3,
 			"sheets":
 			[
 				{
 					"buffer": 0,
-					"file": "tasks/views.py",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 2259,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								1952,
-								1952
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Python/Python.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 1296.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 0,
-					"type": "text"
-				},
-				{
-					"buffer": 1,
-					"file": "/home/maciej/Copy Decrypted/Documents/Informatyka Studia/Semestr V/Automaty i języki formalne/LABS/daut-2015-s384780/TaskX08/sample.hs",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 1323,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								0,
-								0
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/Haskell/Haskell.tmLanguage"
-						},
-						"translation.x": 0.0,
-						"translation.y": 0.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 4,
-					"type": "text"
-				},
-				{
-					"buffer": 2,
-					"file": "templates/index.html",
-					"semi_transient": true,
-					"settings":
-					{
-						"buffer_size": 1952,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								70,
-								70
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/HTML/HTML.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 486.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 2,
-					"type": "text"
-				},
-				{
-					"buffer": 3,
-					"file": "templates/base.html",
-					"semi_transient": false,
-					"settings":
-					{
-						"buffer_size": 5926,
-						"regions":
-						{
-						},
-						"selection":
-						[
-							[
-								3577,
-								3577
-							]
-						],
-						"settings":
-						{
-							"syntax": "Packages/HTML/HTML.tmLanguage",
-							"tab_size": 4,
-							"translate_tabs_to_spaces": true
-						},
-						"translation.x": 0.0,
-						"translation.y": 2970.0,
-						"zoom_level": 1.0
-					},
-					"stack_index": 3,
-					"type": "text"
-				},
-				{
-					"buffer": 4,
 					"file": "MyTask/urls.py",
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 477,
+						"buffer_size": 766,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								474,
-								474
+								564,
+								564
 							]
 						],
 						"settings":
@@ -549,7 +416,93 @@
 						"translation.y": 0.0,
 						"zoom_level": 1.0
 					},
+					"stack_index": 3,
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "tasks/views.py",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 3050,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2742,
+								2742
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Python/Python.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": -0.0,
+						"translation.y": 1710.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 2,
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "templates/registration/success.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1315,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								1315,
+								1315
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 352.0,
+						"zoom_level": 1.0
+					},
 					"stack_index": 1,
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "templates/registration/error.html",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1347,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								909,
+								909
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 171.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
 					"type": "text"
 				}
 			]
@@ -636,7 +589,7 @@
 	"show_open_files": true,
 	"show_tabs": true,
 	"side_bar_visible": true,
-	"side_bar_width": 315.0,
+	"side_bar_width": 233.0,
 	"status_bar_visible": true,
 	"template_settings":
 	{

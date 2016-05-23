@@ -30,33 +30,16 @@
         <div class="container">
             <div class="header clearfix">
 
-                <nav>
-                    <ul class="nav nav-pills pull-right">
-                        {% if logged_in == True %}
-                            <li role="presentation"><a href="{% url 'logout' %}">Wyloguj</a></li>
-                        {% else %}
-                            <li role="presentation"><a href="/">Zaloguj</a></li>
-                        {% endif %}
-                    </ul>
-                </nav>
-
                 <h3 class="text-muted">MyTask</h3>
 
             </div>
 
-            {% if logged_in == True %}
-                {% block tasks %}
-                {% endblock %}
-            {% elif register %}
-                {% block register %}
-                {% endblock %}
-            {% else %}
-                {% block login %}
-                {% endblock %}
-            {% endif %}
+            <div class="jumbotron">
+            <p> Taki użytkownik już istnieje. Wybierz inną nazwę użytkownika <br>
 
-            {% block footer %}
-            {% endblock %}
+            <a href='/register/'> Powrót do rejestracji. </a></p>
+            </div>
+
 
         </div> 
 

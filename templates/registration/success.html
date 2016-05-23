@@ -30,33 +30,14 @@
         <div class="container">
             <div class="header clearfix">
 
-                <nav>
-                    <ul class="nav nav-pills pull-right">
-                        {% if logged_in == True %}
-                            <li role="presentation"><a href="{% url 'logout' %}">Wyloguj</a></li>
-                        {% else %}
-                            <li role="presentation"><a href="/">Zaloguj</a></li>
-                        {% endif %}
-                    </ul>
-                </nav>
-
                 <h3 class="text-muted">MyTask</h3>
 
             </div>
 
-            {% if logged_in == True %}
-                {% block tasks %}
-                {% endblock %}
-            {% elif register %}
-                {% block register %}
-                {% endblock %}
-            {% else %}
-                {% block login %}
-                {% endblock %}
-            {% endif %}
+            <div class="jumbotron">
+            <p> Rejestracja przebiegła pomyślnie! <a href='/'> Zaloguj </a> się aby zacząć korzystać z serwisu. </p>
+            </div>
 
-            {% block footer %}
-            {% endblock %}
 
         </div> 
 
